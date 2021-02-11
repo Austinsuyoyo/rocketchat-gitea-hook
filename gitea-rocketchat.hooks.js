@@ -93,17 +93,11 @@ const giteaEvents = {
         const repo = request.content.repository;
         const branch = request.content.ref.split('/').pop();
 
-        if (commits.length > 1) {
-            var title = "Show all commits";
-        } else {
-            var title = ""
-        }
         const attachment = {
             collapsed: true,
-            title: title,
+            title: "Show " + commits.length + " commit",
             fields: []
         };
-
 
         for (var i = 0; i < commits.length; i++) {
             var commit = commits[i];
