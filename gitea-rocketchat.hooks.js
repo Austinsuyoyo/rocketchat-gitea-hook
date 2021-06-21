@@ -28,7 +28,7 @@ const getLabelsField = (labels) => {
 };
 
 const giteaEvents = {
-
+    /*---------------------- Repository Events ----------------------*/
     /* Create branch or tag */
     create(request) {
         const user = request.content.sender;
@@ -70,8 +70,7 @@ const giteaEvents = {
             }
         };
     },
-
-    /*  Someone forked repository */
+    /* Someone forked repository */
     fork(request) {
         const user = request.content.sender;
         const repo = request.content.repository;
@@ -85,7 +84,6 @@ const giteaEvents = {
             }
         };
     },
-
     /* Push to repository */
     push(request) {
         const commits = request.content.commits;
@@ -121,6 +119,65 @@ const giteaEvents = {
             }
         };
     },
+    /* Deleted/Created Repository */
+    repository(request) {
+        const user = request.content.sender;
+        const repo = request.content.repository;
+        const action = request.content.action;
+
+        if (request.content.action == "deleted") {
+            // Do nothing
+        } else if (request.content.action == "created") {
+            // Do nothing
+        } else {
+            return {
+                error: {
+                    success: false,
+                    message: 'Unsupported issue action'
+                }
+            };
+        }
+
+        const text = action.capitalizeFirstLetter() + ' repository **[' + repo.full_name + '](' + repo.html_url + ')**';
+
+        return {
+            content: {
+                icon_url: user.avatar_url,
+                alias: user.login,
+                text: text
+            }
+        };
+    },
+    /* Published/Updated/Deleted release */
+    release(request) {
+        const user = request.content.sender;
+        const repo = request.content.repository;
+        const release = request.content.release;
+        if (request.content.action == 'published') {
+            var text = 'Release published "**[' + release.name + '](' + release.html_url + ')** at [' + repo.full_name + '](' + repo.html_url + ')';
+        } else if (request.content.action == 'updated') {
+            var text = 'Release updated  "**[' + release.name + '](' + release.html_url + ')** at [' + repo.full_name + '](' + repo.html_url + ')';
+        } else if (request.content.action == 'deleted') {
+            var text = 'Release deleted  "**[' + release.name + '](' + release.html_url + ')** at [' + repo.full_name + '](' + repo.html_url + ')';
+        } else {
+            return {
+                error: {
+                    success: false,
+                    message: 'Unsupported release action'
+                }
+            };
+        }
+
+        return {
+            content: {
+                icon_url: user.avatar_url,
+                alias: user.login,
+                text: text
+            }
+        };
+    },
+
+    /*---------------------- Issue Events ----------------------*/
     /* New/Modified issues */
     issues(request) {
         const user = request.content.sender;
@@ -166,7 +223,6 @@ const giteaEvents = {
             }
         };
     },
-
     /* Comment on existing issues or pull request*/
     issue_comment(request) {
         const user = request.content.comment.user;
@@ -222,6 +278,7 @@ const giteaEvents = {
         };
     },
 
+    /*---------------------- Pull Request Events ----------------------*/
     /* New/Created pull request*/
     pull_request(request) {
         const user = request.content.sender;
@@ -245,6 +302,8 @@ const giteaEvents = {
             }
         } else if (action == "milestoned" || action == "demilestoned") {
             var body = "Milestone: [" + pr.milestone.title + "](" + repo.html_url + "/milestone/" + pr.milestone.id + ")";
+        } else if (action == "synchronized"){
+            var body = "Triggered by: " + user.login; //no attachments
         } else {
             return {
                 error: {
@@ -319,64 +378,7 @@ const giteaEvents = {
         };
     },
 
-    /* Deleted/Created Repository */
-    repository(request) {
-        const user = request.content.sender;
-        const repo = request.content.repository;
-        const action = request.content.action;
 
-        if (request.content.action == "deleted") {
-            // Do nothing
-        } else if (request.content.action == "created") {
-            // Do nothing
-        } else {
-            return {
-                error: {
-                    success: false,
-                    message: 'Unsupported issue action'
-                }
-            };
-        }
-
-        const text = action.capitalizeFirstLetter() + ' repository **[' + repo.full_name + '](' + repo.html_url + ')**';
-
-        return {
-            content: {
-                icon_url: user.avatar_url,
-                alias: user.login,
-                text: text
-            }
-        };
-    },
-
-    /* Published/Updated/Deleted release */
-    release(request) {
-        const user = request.content.sender;
-        const repo = request.content.repository;
-        const release = request.content.release;
-        if (request.content.action == 'published') {
-            var text = 'Release published "**[' + release.name + '](' + release.html_url + ')** at [' + repo.full_name + '](' + repo.html_url + ')';
-        } else if (request.content.action == 'updated') {
-            var text = 'Release updated  "**[' + release.name + '](' + release.html_url + ')** at [' + repo.full_name + '](' + repo.html_url + ')';
-        } else if (request.content.action == 'deleted') {
-            var text = 'Release deleted  "**[' + release.name + '](' + release.html_url + ')** at [' + repo.full_name + '](' + repo.html_url + ')';
-        } else {
-            return {
-                error: {
-                    success: false,
-                    message: 'Unsupported release action'
-                }
-            };
-        }
-
-        return {
-            content: {
-                icon_url: user.avatar_url,
-                alias: user.login,
-                text: text
-            }
-        };
-    },
 };
 
 class Script {
