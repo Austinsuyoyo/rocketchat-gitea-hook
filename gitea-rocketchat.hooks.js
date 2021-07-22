@@ -225,30 +225,34 @@ const giteaEvents = {
     },
     /* Comment on existing issues or pull request*/
     issue_comment(request) {
-        const user = request.content.comment.user;
+        const user = request.content.sender;
         const repo = request.content.repository;
         const action = request.content.action;
-
-        if (action == "created") {
-            // Do nothing
-        } else if (action == "edited") {
-            // Do nothing
-        } else if (action == "deleted") {
-            // Do nothing
-        } else {
-            return {
-                error: {
-                    success: false,
-                    message: 'Unsupported issue_comment action'
-                }
-            };
-        }
-
-        if (request.content.comment.pull_request_url) {
+        
+        if (action == "created" || action == "edited" || action == "deleted") {
+            var body = request.content.comment.body;
+            var number = request.content.issue.number;
+            var title = request.content.issue.title;
+            var url = request.content.comment.html_url;
+            if (request.content.comment.pull_request_url) {
+                var type = "pull request";
+                
+            } else if (request.content.comment.issue_url) {
+                var type = "issue";
+            } else {
+                return {
+                    error: {
+                        success: false,
+                        message: 'Unsupported issue_comment action'
+                    }
+                };
+            }
+        } else if (action == "reviewed") {
+            var body = request.content.review.content;
+            var number = request.content.pull_request.number;
+            var title = request.content.pull_request.title;
+            var url = request.content.pull_request.url;
             var type = "pull request";
-        } else if (request.content.comment.issue_url) {
-
-            var type = "issue";
         } else {
             return {
                 error: {
@@ -257,12 +261,12 @@ const giteaEvents = {
                 }
             };
         }
+
+
 
         const text =
-            action.capitalizeFirstLetter() + ' comment on **[' + type + ' ​#' + request.content.issue.number +
-            ' - ' + request.content.issue.title + '](' +
-            request.content.comment.html_url + ')**' + ' at [' + repo.full_name + '](' + repo.html_url + ')\n\n';
-
+            action.capitalizeFirstLetter() + ' comment on **[' + type + ' ​#' + number +
+            ' - ' + title + '](' + url + ')**' + ' at [' + repo.full_name + '](' + repo.html_url + ')\n\n';
 
         return {
             content: {
@@ -271,7 +275,7 @@ const giteaEvents = {
                 text: text,
                 attachments: [
                     {
-                        text: request.content.comment.body
+                        text: body
                     }
                 ]
             }
