@@ -100,9 +100,10 @@ const giteaEvents = {
         for (var i = 0; i < commits.length; i++) {
             var commit = commits[i];
             var shortID = commit.id.substring(0, 7);
-            output = '[#' + shortID + '](' + commit.url + '): \n' + commit.message
             attachment.fields.push({
-                value: output,
+                short: false,
+                title: '[#' + shortID + '](' + commit.url + '): \n',
+                value: commit.message,
             });
         }
 
