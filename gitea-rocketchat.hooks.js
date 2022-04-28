@@ -297,13 +297,16 @@ const giteaEvents = {
             var body = "Current labels: " + getLabelsField(pr.labels).value;
         } else if (action == "assigned" || action == "unassigned") {
             if (pr.assignee) {
-                var body = "Current assignee: " + getAssigneesField(pr.assignees).value;
+                var assign_text = "Current assignee: " + getAssigneesField(pr.assignees).value;
             } else {
-                var body = "There is no assignee";
+                var assign_text = "There is no assignee";
             }
         } else if (action == "closed") {
             if (pr.merged) {
                 var body = "Merged by: " + pr.merged_by.login;
+            }
+            else{
+                var body = "Not merged pull request"
             }
         } else if (action == "milestoned" || action == "demilestoned") {
             var body = "Milestone: [" + pr.milestone.title + "](" + repo.html_url + "/milestone/" + pr.milestone.id + ")";
@@ -317,11 +320,18 @@ const giteaEvents = {
                 }
             };
         }
-        const text =
+        if(assign_text){
+            var text =
+                action.capitalizeFirstLetter() + ' **[pull request ​#' + pr.number +
+                ' - ' + pr.title + '](' +
+                pr.html_url + ')**' + ' at [' + repo.full_name + '](' + repo.html_url + ')\n\n'+ assign_text;
+        }
+        else{
+            var text =
             action.capitalizeFirstLetter() + ' **[pull request ​#' + pr.number +
             ' - ' + pr.title + '](' +
             pr.html_url + ')**' + ' at [' + repo.full_name + '](' + repo.html_url + ')\n\n';
-
+        }
         return {
             content: {
                 icon_url: user.avatar_url,
